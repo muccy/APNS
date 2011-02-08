@@ -41,5 +41,27 @@ module APNS
         "Error description not found(!)."
       end
     end
+
+    # Check whether the given connection receives any data within 1 second. If it does return true
+    def self.connection_have_output? connection
+      readfds, writefds, exceptfds = select([connection], nil, nil, 1)
+      !readfds.nil?
+    end
+
+    # returns a map that represent a error in sending a notification, if any errors are received through
+    # the given ssl connection within 1 second
+    #
+    # format
+    #    {
+    #          :notification_id => 2,
+    #          :error           => {
+    #              :type        => 8,
+    #              :code        => 7,
+    #              :description => "Invalid payload size"
+    #          }
+    #      }
+    def self.get_error_if_present ssl_connection
+      self.get_apns_error(ssl_connection.read) if self.connection_have_output? ssl_connection
+    end
   end
 end
