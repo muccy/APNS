@@ -2,7 +2,7 @@ require 'rubygems'
 require 'rake/gempackagetask'
 require 'rubygems/specification'
 require 'date'
-require 'spec/rake/spectask'
+#require 'spec/rake/spectask'
  
 GEM = 'apns'
 GEM_NAME = 'apns'
@@ -30,11 +30,11 @@ end
  
 task :default => :spec
  
-desc "Run specs"
-Spec::Rake::SpecTask.new do |t|
-  t.spec_files = FileList['spec/**/*_spec.rb']
-  t.spec_opts = %w(-fs --color)
-end
+#desc "Run specs"
+#Spec::Rake::SpecTask.new do |t|
+#  t.spec_files = FileList['spec/**/*_spec.rb']
+#  t.spec_opts = %w(-fs --color)
+#end
  
 Rake::GemPackageTask.new(spec) do |pkg|
   pkg.gem_spec = spec
@@ -50,4 +50,9 @@ task :make_spec do
   File.open("#{GEM}.gemspec", "w") do |file|
     file.puts spec.to_ruby
   end
+end
+
+desc "Open an irb session preloaded with this library"
+task :console do
+  sh "irb -rubygems -I lib -I  extra -r apns.rb"
 end
