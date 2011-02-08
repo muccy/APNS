@@ -26,7 +26,7 @@ module APNS
       #ssl.write(self.packaged_notification(device_token, message))
       ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
 
-      error = ssl.read.unpack("ccN") if APNS.connection_have_output? ssl
+      error = APNS::ApnsErrorCodeHandler.get_apns_error(ssl.read) if APNS.connection_have_output? ssl
 
     ensure
       ssl.close
