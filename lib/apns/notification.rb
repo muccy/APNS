@@ -1,7 +1,7 @@
 module APNS
   class Notification
     attr_accessor :device_token, :alert, :badge, :sound, :other
-    
+
     def initialize(device_token, message)
       self.device_token = device_token
       if message.is_a?(Hash)
@@ -15,13 +15,9 @@ module APNS
         raise "Notification needs to have either a hash or string"
       end
     end
-        
-    def packaged_notification id
-      #pt = self.packaged_token
-      pm = self.packaged_message
 
-      # simple notification format
-      #[0, 0, 32, pt, 0, pm.size, pm].pack("ccca*cca*")
+    def packaged_notification id
+      pm = self.packaged_message
 
       # enhanced notification format
       # ref:
@@ -32,19 +28,14 @@ module APNS
       #     http://blog.technopathllc.com/2010/12/apples-push-notification-with-ruby.html
       [1, id, 0, 32, self.device_token, pm.size, pm].pack("cNNnH*na*")
     end
-  
-#    def packaged_token
-#      [device_token.gsub(/[\s|<|>]/,'')].pack('H*')
-#    end
-  
+
     def packaged_message
-      aps = {'aps'=> {} }
+      aps = {'aps'=> {}}
       aps['aps']['alert'] = self.alert if self.alert
       aps['aps']['badge'] = self.badge if self.badge
       aps['aps']['sound'] = self.sound if self.sound
       aps.merge!(self.other) if self.other
       aps.to_json
     end
-    
   end
 end

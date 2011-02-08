@@ -8,9 +8,9 @@ module APNS
       # return the map
       {
           :notification_id => raw_error[2],
-          :error => {
-              :type => raw_error[0],
-              :code => raw_error[1],
+          :error           => {
+              :type        => raw_error[0],
+              :code        => raw_error[1],
               :description => self.decode_apns_error_code(raw_error[1])
           }
       }
@@ -41,6 +41,5 @@ module APNS
         "Error description not found(!)."
       end
     end
-
   end
 end
