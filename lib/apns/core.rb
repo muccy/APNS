@@ -76,7 +76,9 @@ module APNS
         # start sending notifications
         for i in state[:start_point]..(notifications.size - 1)
           ssl.write(notifications[i].packaged_notification(i))
-          sleep(1)
+          #sleep(1) #use this for testing the rescue Errno::EPIPE block. As when you only have a small number of notifications
+          #the rescue block never gets executed as it takes a while for the APNS to send a error
+          #through the pipe and disconnect you.
         end
 
         if !self.continue_notification_sending?(state, ssl, notifications)
