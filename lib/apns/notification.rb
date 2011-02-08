@@ -16,15 +16,26 @@ module APNS
       end
     end
         
-    def packaged_notification
-      pt = self.packaged_token
+    def packaged_notification id
+      #pt = self.packaged_token
       pm = self.packaged_message
-      [0, 0, 32, pt, 0, pm.size, pm].pack("ccca*cca*")
+
+      # simple notification format
+      #[0, 0, 32, pt, 0, pm.size, pm].pack("ccca*cca*")
+
+      # enhanced notification format
+      # ref:
+      #   Apple Documentation:
+      #     http://developer.apple.com/library/ios/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingWIthAPS/CommunicatingWIthAPS.html
+      #
+      #   Example Ruby implementation using event machine
+      #     http://blog.technopathllc.com/2010/12/apples-push-notification-with-ruby.html
+      [1, id, 0, 32, self.device_token, pm.size, pm].pack("cNNnH*na*")
     end
   
-    def packaged_token
-      [device_token.gsub(/[\s|<|>]/,'')].pack('H*')
-    end
+#    def packaged_token
+#      [device_token.gsub(/[\s|<|>]/,'')].pack('H*')
+#    end
   
     def packaged_message
       aps = {'aps'=> {} }
