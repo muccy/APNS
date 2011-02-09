@@ -6,14 +6,8 @@ module APNS
     @pem  = nil # this should be the path of the pem file not the content's
     @pass = nil
 
-    INSTANCE = Config.new
-
     class << self
       attr_accessor :host, :pem, :port, :pass
-    end
-
-    def self.instance
-      INSTANCE
     end
   end
 end
