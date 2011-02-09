@@ -3,16 +3,6 @@ module APNS
   require 'openssl'
   require 'json'
 
-  @host = 'gateway.sandbox.push.apple.com'
-  @port = 2195
-  # openssl pkcs12 -in mycert.p12 -out client-cert.pem -nodes -clcerts
-  @pem  = nil # this should be the path of the pem file not the content's
-  @pass = nil
-
-  class << self
-    attr_accessor :host, :pem, :port, :pass
-  end
-
   def self.send_notification(device_token, message)
     begin
       sock, ssl = self.open_connection
@@ -111,55 +101,22 @@ module APNS
     state[:failures]
   end
 
-  def self.feedback
-    sock, ssl = self.feedback_connection
-
-    apns_feedback = []
-
-    while line = sock.gets # Read lines from the socket
-      line.strip!
-      f = line.unpack('N1n1H140')
-      apns_feedback << [Time.at(f[0]), f[2]]
-    end
-
-    ssl.close
-    sock.close
-
-    return apns_feedback
-  end
-
   protected
 
   def self.open_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
+    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless APNS::Config.pem
+    raise "The path to your pem file does not exist!" unless File.exist?(APNS::Config.pem)
 
     context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
+    context.cert = OpenSSL::X509::Certificate.new(File.read(APNS::Config.pem))
+    context.key  = OpenSSL::PKey::RSA.new(File.read(APNS::Config.pem), APNS::Config.pass)
 
-    sock         = TCPSocket.new(self.host, self.port)
+    sock         = TCPSocket.new(APNS::Config.host, APNS::Config.port)
     ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
     ssl.connect
 
     return sock, ssl
   end
 
-  def self.feedback_connection
-    raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless self.pem
-    raise "The path to your pem file does not exist!" unless File.exist?(self.pem)
 
-    context      = OpenSSL::SSL::SSLContext.new
-    context.cert = OpenSSL::X509::Certificate.new(File.read(self.pem))
-    context.key  = OpenSSL::PKey::RSA.new(File.read(self.pem), self.pass)
-
-    fhost        = self.host.gsub!('gateway', 'feedback')
-    puts fhost
-
-    sock = TCPSocket.new(fhost, 2196)
-    ssl  = OpenSSL::SSL::SSLSocket.new(sock, context)
-    ssl.connect
-
-    return sock, ssl
-  end
 end
