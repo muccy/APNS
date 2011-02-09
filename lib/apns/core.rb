@@ -18,6 +18,9 @@ module APNS
       sock, ssl = self.open_connection
       ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
       error = APNS::ApnsErrorCodeHandler.get_error_if_present ssl
+    rescue Exception => ex
+      APNS::ApnsLogger.log.fatal "Exception in send_notification. device_token: #{device_token} message: #{message}"
+      APNS::ApnsLogger.log.fatal(error = ex)
     ensure
       ssl.close
       sock.close
@@ -35,6 +38,8 @@ module APNS
   # the notification process should not continue (meaning that no errors were found).
   def self.continue_notification_sending? state, ssl, notifications
     if error = APNS::ApnsErrorCodeHandler.get_error_if_present(ssl)
+      APNS::ApnsLogger.log.warn "Error detected in continue_notification_sending?"
+      APNS::ApnsLogger.log.warn error
       # record the failure to send this notification, that failed
       state[:failures] << {
           :token => notifications[error[:notification_id]],
@@ -86,12 +91,16 @@ module APNS
         end
 
       rescue Errno::EPIPE => epipe_exception # this is the classic error when APNS drops the connection...
+        APNS::ApnsLogger.log.warn "EPIPE Exception in send_notifications"
+        APNS::ApnsLogger.log.warn epipe_exception
         # try to get the error message sent by the APNS. This should be present if the connection was
         # dropped by the APNS because of a error in a sent notification.
         if !self.continue_notification_sending?(state, ssl, notifications)
           break #if APNS didn't sent a error, we don't know what notifications got sent and what didn't. Just give up.
         end
       rescue Exception => exception # whatever other errors goes here
+        APNS::ApnsLogger.log.fatal "Exception in send_notifications"
+        APNS::ApnsLogger.log.fatal exception
         break #this is a unexpected situation. We don't know what notifications got sent and what didn't. so just giveup.
       ensure # make sure we close the connections whatever happens
         ssl.close
