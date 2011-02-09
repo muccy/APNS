@@ -1,12 +1,10 @@
 module APNS
   class NotificationSender
-    require 'socket'
-    require 'openssl'
     require 'json'
 
     def self.send_notification(device_token, message)
       begin
-        sock, ssl = self.open_connection
+        sock, ssl = APNS::ConnectionProvider.open_connection
         ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
         error = APNS::ApnsErrorCodeHandler.get_error_if_present ssl
       rescue Exception => ex
@@ -67,7 +65,7 @@ module APNS
       while true do
         begin
           # get the connection
-          sock, ssl = self.open_connection
+          sock, ssl = APNS::ConnectionProvider.open_connection
 
           # start sending notifications
           for i in state[:start_point]..(notifications.size - 1)
@@ -100,23 +98,6 @@ module APNS
       end
 
       state[:failures]
-    end
-
-    protected
-
-    def self.open_connection
-      raise "The path to your pem file is not set. (APNS.pem = /path/to/cert.pem)" unless APNS::Config.pem
-      raise "The path to your pem file does not exist!" unless File.exist?(APNS::Config.pem)
-
-      context      = OpenSSL::SSL::SSLContext.new
-      context.cert = OpenSSL::X509::Certificate.new(File.read(APNS::Config.pem))
-      context.key  = OpenSSL::PKey::RSA.new(File.read(APNS::Config.pem), APNS::Config.pass)
-
-      sock         = TCPSocket.new(APNS::Config.host, APNS::Config.port)
-      ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
-      ssl.connect
-
-      return sock, ssl
     end
   end
 end
