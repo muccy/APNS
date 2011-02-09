@@ -1,5 +1,7 @@
 module APNS
   class ApnsLogger
+    require 'logger'
+    
     APP_NAME = "APNS"
     LOGGER_INSTANCE = Logger.new(STDOUT)
     LOGGER_INSTANCE.level = Logger::DEBUG
