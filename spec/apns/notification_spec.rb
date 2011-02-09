@@ -8,9 +8,12 @@ describe APNS::Notification do
   end
   
   it "should take a hash as the message" do
-    n = APNS::Notification.new('device_token', {:alert => 'Hello iPhone', :badge => 3})
-    n.alert.should == "Hello iPhone"
+    n = APNS::Notification.new("device_token", {:alert => "alert", :badge => 3, :sound => "sound", :other => {:type => "type"}})
+    n.device_token == "device_token"
+    n.alert.should == "alert"
     n.badge.should == 3
+    n.sound.should == "sound"
+    n.other.should == {:type => "type"}
   end
   
   describe '#packaged_message' do
@@ -26,18 +29,11 @@ describe APNS::Notification do
     end
     
   end
-  
-  describe '#package_token' do
-    it "should package the token" do
-      n = APNS::Notification.new('<5b51030d d5bad758 fbad5004 bad35c31 e4e0f550 f77f20d4 f737bf8d 3d5524c6>', 'a')
-      Base64.encode64(n.packaged_token).should == "W1EDDdW611j7rVAEutNcMeTg9VD3fyDU9ze/jT1VJMY=\n"
-    end
-  end
 
   describe '#packaged_notification' do
     it "should package the token" do
       n = APNS::Notification.new('device_token', {:alert => 'Hello iPhone', :badge => 3, :sound => 'awesome.caf'})
-      Base64.encode64(n.packaged_notification).should == "AAAg3vLO/YTnAEB7ImFwcyI6eyJiYWRnZSI6Mywic291bmQiOiJhd2Vzb21l\nLmNhZiIsImFsZXJ0IjoiSGVsbG8gaVBob25lIn19\n"
+      Base64.encode64(n.packaged_notification(89)).should == "AQAAAFkAAAAAACDe8s79hOcAQHsiYXBzIjp7ImFsZXJ0IjoiSGVsbG8gaVBo\nb25lIiwiYmFkZ2UiOjMsInNvdW5kIjoiYXdlc29tZS5jYWYifX0=\n"
     end
   end
   
