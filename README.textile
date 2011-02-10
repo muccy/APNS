@@ -143,7 +143,15 @@ contains a collection of map objects which details the errors occurred while sen
         [
             {
                 :token => "device_token_to_which_the_failed_notification_was_sent",
-                :error => {}
+                :error =>
+                         {
+                              :notification_id => 2,
+                              :error           => {
+                                  :type        => 8,
+                                  :code        => 7,
+                                  :description => "Invalid payload size"
+                              }
+                          }
             }
         ]
     </code>
