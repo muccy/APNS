@@ -44,7 +44,7 @@ module APNS
 
     # Check whether the given connection receives any data within 1 second. If it does return true
     def self.connection_have_output? connection
-      readfds, writefds, exceptfds = select([connection], nil, nil, 1)
+      readfds, writefds, exceptfds = Kernel.select([connection], nil, nil, 1)
       !readfds.nil?
     end
 
