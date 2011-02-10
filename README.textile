@@ -1,6 +1,9 @@
 h1. APNS
 
-a gem for the Apple Push Notification Service.
+a gem for the Apple Push Notification Service. This project was forked from https://github.com/jpoz/APNS by jpoz
+and schandra. This fork adds support for the Apple's Enhanced Notification Format and aims to have better test coverage.
+
+The API and the code have been refactored and tweaked with the aim of making them more modular and testable.
 
 h2. Install
 
@@ -41,9 +44,9 @@ Then to send a push notification you can either just send a string as the alert 
   <code>
     device_token = '123abc456def'
 
-    APNS.send_notification(device_token, 'Hello iPhone!' )
+    APNS::NotificationSender.send_notification(device_token, 'Hello iPhone!' )
 
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
+    APNS::NotificationSender.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
   </code>
 </pre>
 
@@ -59,7 +62,7 @@ You can also send multiple notifications using the same connection to Apple:
 
     n2 = APNS::Notification.new(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default')
     
-    APNS.send_notifications([n1, n2])
+    APNS::NotificationSender.send_notifications([n1, n2])
   </code>
 </pre>
 
@@ -70,7 +73,7 @@ You can send other application specific information as well.
 
 <pre>
   <code>
-    APNS.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default',
+    APNS::NotificationSender.send_notification(device_token, :alert => 'Hello iPhone!', :badge => 1, :sound => 'default',
                                          :other => {:sent => 'with apns gem'})
   </code>
 </pre>
@@ -83,6 +86,68 @@ This will add the other hash to the same level as the aps hash:
   </code>
 </pre>
 
+
+h2. Enhanced Notification Format and Detecting Errors
+
+Sending notifications can fail due to a number of reasons. The way the Apple notifications servers work is that,
+they will let you know only if something goes wrong and only if you are using the enhanced notification format.
+
+h3. Single Notifications
+
+When sending single notifications. The gem will send the notification and will wait for 1 second for the APNS to send
+a error message. This is usually enough time for the APNS to send a error message if it decides that your notification
+has some error in it.
+
+When you send a notification you will get a return value. Depending on whether there was any error you would get a
+error or nil.
+
+<pre>
+  <code>
+    device_token = '123abc456def'
+
+    result = APNS::NotificationSender.send_notification(device_token, 'Hello iPhone!' )
+  </code>
+</pre>
+
+The error object is a map containing the error.
+
+<pre>
+    <code>
+        {
+              :notification_id => 2,
+              :error           => {
+                  :type        => 8,
+                  :code        => 7,
+                  :description => "Invalid payload size"
+              }
+          }
+    </code>
+</pre>
+
+Description of the fields in the error map
+
+* notification_id - The id of the notification that failed. When sending single notifications the notification_id 
+is always 0. When sending multiple notifications this indicate the position (0 based index) of the notification
+(which resulted in the error) in the array of notifications sent to the send_notifications method.
+* type - this is always 8. Its the type of the message sent by the APNS.
+* code - error code
+* description - description of the error
+
+h3. Multiple Notifications
+
+When sending multiple notifications you will get a array as the return value from the send_notifications method. This
+contains a collection of map objects which details the errors occurred while sending notifications.
+
+<pre>
+    <code>
+        [
+            {
+                :token => "device_token_to_which_the_failed_notification_was_sent",
+                :error => {}
+            }
+        ]
+    </code>
+</pre>
 
 h2. Getting your iPhone's device token
 
