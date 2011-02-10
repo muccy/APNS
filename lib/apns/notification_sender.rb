@@ -2,11 +2,11 @@ module APNS
   class NotificationSender
     require 'json'
 
-    def self.send_notification(device_token, message)
+    def self.send_notification(device_token, message, connection_provider=APNS::ConnectionProvider, error_code_handler=APNS::ApnsErrorCodeHandler)
       begin
-        sock, ssl = APNS::ConnectionProvider.open_connection
+        sock, ssl = connection_provider.open_connection
         ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
-        error = APNS::ApnsErrorCodeHandler.get_error_if_present ssl
+        error = error_code_handler.get_error_if_present ssl
       rescue Exception => ex
         APNS::ApnsLogger.log.fatal "Exception in send_notification. device_token: #{device_token} message: #{message}"
         APNS::ApnsLogger.log.fatal(error = ex)
@@ -25,13 +25,17 @@ module APNS
     #
     # Send true if the notification sending process should continue (manning errors were found). Send false if
     # the notification process should not continue (meaning that no errors were found).
-    def self.continue_notification_sending? state, ssl, notifications
-      if error = APNS::ApnsErrorCodeHandler.get_error_if_present(ssl)
-        APNS::ApnsLogger.log.warn "Error detected in continue_notification_sending?"
-        APNS::ApnsLogger.log.warn error
+    def self.continue_notification_sending?(
+        state, ssl, notifications,
+        error_code_handler=APNS::ApnsErrorCodeHandler,
+        logger=APNS::ApnsLogger.log
+    )
+      if error = error_code_handler.get_error_if_present(ssl)
+        logger.warn "Error detected in continue_notification_sending?"
+        logger.warn error
         # record the failure to send this notification, that failed
         state[:failures] << {
-            :token => notifications[error[:notification_id]],
+            :token => notifications[error[:notification_id]].device_token,
             :error => error
         }
         # start from the next notification in the array/queue
@@ -56,7 +60,7 @@ module APNS
     # [{:token => 112894699s8d7f9sdf79s81237199, :error => {}},...]
     #
     # the :error contains a APNS::ApnsErrorCodeHandler.get_error_if_present returned map representing a APNS returned error
-    def self.send_notifications notifications
+    def self.send_notifications notifications, connection_provider=APNS::ConnectionProvider
       state = {
           :start_point => 0,
           :failures    => []
@@ -65,7 +69,7 @@ module APNS
       while true do
         begin
           # get the connection
-          sock, ssl = APNS::ConnectionProvider.open_connection
+          sock, ssl = connection_provider.open_connection
 
           # start sending notifications
           for i in state[:start_point]..(notifications.size - 1)
