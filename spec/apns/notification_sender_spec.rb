@@ -137,6 +137,100 @@ describe APNS::NotificationSender do
 
       result.should == [] # empty array / no errors
     end
+
+    it "should send notifications and report errors (of type 1) when there are APNS errors" do
+      n1                = double()
+      n2                = double()
+      n3                = double()
+      n4                = double()
+      n5                = double()
+
+      n1.should_receive(:packaged_notification).with(0)
+      n2.should_receive(:packaged_notification).with(1)
+      n3.should_receive(:packaged_notification).with(2) # the one that fails
+      n4.should_receive(:packaged_notification).with(3).twice
+      n5.should_receive(:packaged_notification).with(4).twice
+      notifications_array = [n1, n2, n3, n4, n5]
+
+      # errors in 3rd notification scenario
+      APNS::NotificationSender.should_receive(:continue_notification_sending?) do |state, ssl, notifications|
+        if state[:start_point] == 3 # check whether this is the second round or the first
+          false
+        else
+          state[:start_point] = 3 # error in 3 rd notification then start sending again from 4th (o based index => 3)
+          # notification. because the 3rd notification is not the last we can just ask send_notifications to continue
+
+          state[:failures] << "fake error"
+          true
+        end
+      end.exactly(2).times
+
+      sock = double()
+      ssl = double()
+
+      connection_provider = double()
+      connection_provider.stub(:open_connection) { [sock, ssl] }
+
+      ssl.should_receive(:write).exactly(7).times #5 + 2 repeated attempts
+      ssl.should_receive(:close).twice
+      sock.should_receive(:close).twice
+
+      result =APNS::NotificationSender.send_notifications(notifications_array, connection_provider)
+
+      result.count.should == 1 # one error
+    end
+
+    it "should send notifications and report errors (of type 2) when there are APNS errors" do
+      n1                = double()
+      n2                = double()
+      n3                = double()
+      n4                = double()
+      n5                = double()
+
+      n1.should_receive(:packaged_notification).with(0)
+      n2.should_receive(:packaged_notification).with(1)
+      n3.should_receive(:packaged_notification).with(2) # the one that fails
+      n4.should_receive(:packaged_notification).with(3).twice
+      n5.should_receive(:packaged_notification).with(4).twice
+      notifications_array = [n1, n2, n3, n4, n5]
+
+      # errors in 3rd notification scenario
+      APNS::NotificationSender.should_receive(:continue_notification_sending?) do |state, ssl, notifications|
+        if state[:start_point] == 3 # check whether this is the second round or the first
+          false
+        else
+          state[:start_point] = 3 # error in 3 rd notification then start sending again from 4th (o based index => 3)
+          # notification. because the 3rd notification is not the last we can just ask send_notifications to continue
+
+          state[:failures] << "fake error"
+          true
+        end
+      end.exactly(2).times
+
+      sock = double()
+      ssl = double()
+
+      connection_provider = double()
+      connection_provider.stub(:open_connection) { [sock, ssl] }
+
+      @number_of_times_called = 0
+      ssl.should_receive(:write) do |data|
+        @number_of_times_called = @number_of_times_called +1
+        # fail on the 4th call
+        if @number_of_times_called == 4
+          raise_error Errno::EPIPE
+        else
+          nil
+        end
+      end.exactly(7).times #5 + 2 repeated attempts
+
+      ssl.should_receive(:close).twice
+      sock.should_receive(:close).twice
+
+      result =APNS::NotificationSender.send_notifications(notifications_array, connection_provider)
+
+      result.count.should == 1 # one error
+    end
   end
 
   describe "#continue_notification_sending?" do
