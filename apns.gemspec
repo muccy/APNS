@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.description = %q{Simple Apple push notification service gem}
   s.email = %q{thekindofme@gmail.com}
   s.extra_rdoc_files = ["MIT-LICENSE"]
-  s.files = ["MIT-LICENSE", "README.textile", "Rakefile", "lib/apns", "lib/apns/notification.rb", "lib/apns.rb", "lib/apns/apns_error_code_handler", "lib/apns/apns_logger", "lib/apns/config", "lib/apns/feedback", "lib/apns/notification_sender", "lib/apns/connection_provider"]
+  s.files = ["MIT-LICENSE", "README.textile", "Rakefile", "lib/apns", "lib/apns/notification.rb", "lib/apns.rb", "lib/apns/apns_error_code_handler.rb", "lib/apns/apns_logger.rb", "lib/apns/config.rb", "lib/apns/feedback.rb", "lib/apns/notification_sender.rb", "lib/apns/connection_provider.rb"]
   s.homepage = %q{http://github.com/thekindofme/apns}
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.3.5}
