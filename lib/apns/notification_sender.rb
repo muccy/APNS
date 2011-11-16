@@ -7,6 +7,7 @@ module APNS
         sock, ssl = connection_provider.open_connection
         ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
         error = error_code_handler.get_error_if_present ssl
+        APNS::ApnsLogger.log.info("error received from the APNS: #{error}") if error
       rescue Exception => ex
         APNS::ApnsLogger.log.fatal "Exception in send_notification. device_token: #{device_token} message: #{message}"
         APNS::ApnsLogger.log.fatal(error = ex)
