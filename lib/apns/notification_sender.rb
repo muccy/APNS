@@ -11,8 +11,18 @@ module APNS
         APNS::ApnsLogger.log.fatal "Exception in send_notification. device_token: #{device_token} message: #{message}"
         APNS::ApnsLogger.log.fatal(error = ex)
       ensure
-        ssl.close
-        sock.close
+        #do a couple of checks to see if both ssl and sock are null.
+        if ssl
+          ssl.close
+        else
+          APNS::ApnsLogger.log.warn("ssl socket was null when trying to close it")
+        end
+
+        if sock
+          sock.close
+        else
+          APNS::ApnsLogger.log.warn("tcp socket was null when trying to close it")
+        end
       end
       error
     end
@@ -27,8 +37,8 @@ module APNS
     # the notification process should not continue (meaning that no errors were found).
     def self.continue_notification_sending?(
         state, ssl, notifications,
-        error_code_handler=APNS::ApnsErrorCodeHandler,
-        logger=APNS::ApnsLogger.log
+            error_code_handler=APNS::ApnsErrorCodeHandler,
+            logger=APNS::ApnsLogger.log
     )
       if error = error_code_handler.get_error_if_present(ssl)
         logger.warn "Error detected in continue_notification_sending?"
@@ -63,7 +73,7 @@ module APNS
     def self.send_notifications notifications, connection_provider=APNS::ConnectionProvider
       state = {
           :start_point => 0,
-          :failures    => []
+          :failures => []
       }
 
       while true do
@@ -96,8 +106,18 @@ module APNS
           APNS::ApnsLogger.log.fatal exception
           break #this is a unexpected situation. We don't know what notifications got sent and what didn't. so just giveup.
         ensure # make sure we close the connections whatever happens
-          ssl.close
-          sock.close
+          #do a couple of checks to see if both ssl and sock are null.
+          if ssl
+            ssl.close
+          else
+            APNS::ApnsLogger.log.warn("ssl socket was null when trying to close it")
+          end
+
+          if sock
+            sock.close
+          else
+            APNS::ApnsLogger.log.warn("tcp socket was null when trying to close it")
+          end
         end
       end
 
