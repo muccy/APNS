@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.rubygems_version = %q{1.3.5}
   s.summary = %q{Simple Apple push notification service gem}
 
-  s.add_dependency('awesome_logger', '> 0')
+  s.add_dependency('awesome_print', '> 0')
 
   if s.respond_to? :specification_version then
     current_version = Gem::Specification::CURRENT_SPECIFICATION_VERSION
