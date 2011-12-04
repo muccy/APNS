@@ -5,14 +5,25 @@ module APNS
   class ApnsLogger
     require 'logger'
     require "ap"
-
-    APP_NAME = "apns_lib"
-    `mkdir -p log` # create a log directory if it does not exist
-    LOGGER_INSTANCE = Logger.new("log/#{APP_NAME}.log", 1000, 1024000) # log to a file, limit to 1MB/(rotate) 1000 files
-    #LOGGER_INSTANCE = Logger.new(STDOUT) # log to the std out
-    LOGGER_INSTANCE.level = Logger::DEBUG
-    #LOGGER_INSTANCE.datetime_format = "%Y-%m-%d %H:%M:%S"
+    
     APNS_LOGGER_INSTANCE = ApnsLogger.new
+    APP_NAME = "apns_lib"
+    
+    def self.logger_instance
+      if !@logger_instance
+        if APNS::Config.log_to_file
+          `mkdir -p log` # create a log directory if it does not exist
+          @logger_instance = Logger.new("log/#{APP_NAME}.log", 1000, 1024000) # log to a file, limit to 1MB/(rotate) 1000 files
+        else 
+          @logger_instance = Logger.new(STDOUT) # log to the std out
+        end
+        
+        @logger_instance.level = Logger::DEBUG
+        #@logger_instance.datetime_format = "%Y-%m-%d %H:%M:%S"
+      end
+      
+      return @logger_instance
+    end
 
     # get the logger instance
     def self.log
@@ -22,7 +33,7 @@ module APNS
     # redirect all calls to methods, to the logger instance
     def method_missing(m, *args, &block)
 	    fm = "[#{Time.now.strftime("%m/%d/%Y-%I:%M%p %Z")}] [#{m.to_s}] #{args[0].to_s}"
-      LOGGER_INSTANCE.send(m, APP_NAME) {fm}
+      self.logger_instance.send(m, APP_NAME) {fm}
     end
 
     def log_array title, array_to_log
