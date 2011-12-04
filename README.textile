@@ -1,13 +1,19 @@
 h1. APNS
 
-a gem for the Apple Push Notification Service. This project was forked from https://github.com/jpoz/APNS by jpoz
+A gem for the Apple Push Notification Service. This project was forked from https://github.com/jpoz/APNS by jpoz
 and schandra. This fork adds support for the Apple's Enhanced Notification Format and aims to have better test coverage.
 
 The API and the code have been refactored and tweaked with the aim of making them more modular and testable.
 
 h2. Install
 
-sudo gem install apns
+Download this project, unzip it, then:
+<pre>
+	<code>
+		gem build apns.gemspec
+		gem install apns-[version].gem
+	</code>
+</pre>
 
 h2. Setup:
 
@@ -25,13 +31,13 @@ After you have your .pem file. Set what host, port, certificate file location on
 
 <pre>
   <code>
-    APNS.host = 'gateway.push.apple.com' 
+    APNS::Config.host = 'gateway.push.apple.com' 
     # gateway.sandbox.push.apple.com is default
 
-    APNS.pem  = '/path/to/pem/file'
+    APNS::Config.pem  = '/path/to/pem/file'
     # this is the file you just created
     
-    APNS.port = 2195 
+    APNS::Config.port = 2195 
     # this is also the default. Shouldn't ever have to set this, but just in case Apple goes crazy, you can.
   </code>
 </pre>
