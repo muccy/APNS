@@ -8,8 +8,8 @@ module APNS
       context.cert = OpenSSL::X509::Certificate.new(File.read(APNS::Config.pem))
       context.key  = OpenSSL::PKey::RSA.new(File.read(APNS::Config.pem), APNS::Config.pass)
 
-      fhost        = APNS::Config.host.gsub!('gateway', 'feedback')
-      puts fhost
+      fhost        = APNS::Config.host.gsub('gateway', 'feedback')
+      # puts fhost
 
       sock = TCPSocket.new(fhost, 2196)
       ssl  = OpenSSL::SSL::SSLSocket.new(sock, context)
@@ -23,10 +23,9 @@ module APNS
 
       apns_feedback = []
 
-      while line = sock.gets # Read lines from the socket
-        line.strip!
-        f = line.unpack('N1n1H140')
-        apns_feedback << [Time.at(f[0]), f[2]]
+      while line = ssl.read(38)
+        f = line.unpack('N1n1H64')
+        apns_feedback << {:time => Time.at(f[0]), :token => f[2]}
       end
 
       ssl.close
