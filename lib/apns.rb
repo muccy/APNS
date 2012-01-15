@@ -1,4 +1,5 @@
 require 'apns/notification'
+require 'apns/mdm_notification'
 require 'apns/apns_error_code_handler'
 require 'apns/apns_logger'
 require 'apns/config'

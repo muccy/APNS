@@ -7,9 +7,9 @@ require 'date'
 GEM = 'apns'
 GEM_NAME = 'apns'
 GEM_VERSION = '0.9.0'
-AUTHORS = ['James Pozdena']
-EMAIL = "jpoz@jpoz.net"
-HOMEPAGE = "http://github.com/jpoz/apns"
+AUTHORS = ["Yasith Fernando", "James Pozdena", "Marco Muccinelli", "Taylor Boyko"]
+EMAIL = "taylorboyko@gmail.com"
+HOMEPAGE = "http://github.com/tboyko/apns"
 SUMMARY = "Simple Apple push notification service gem"
  
 spec = Gem::Specification.new do |s|

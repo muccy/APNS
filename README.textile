@@ -1,9 +1,6 @@
 h1. APNS
 
-A gem for the Apple Push Notification Service. This project was forked from https://github.com/jpoz/APNS by jpoz
-and schandra. This fork adds support for the Apple's Enhanced Notification Format and aims to have better test coverage.
-
-The API and the code have been refactored and tweaked with the aim of making them more modular and testable.
+A gem for the Apple Push Notification Service. This project was forked from https://github.com/muccy/APNS. This fork adds support for MDM APNS notifications.
 
 h2. Install
 
@@ -72,6 +69,30 @@ You can also send multiple notifications using the same connection to Apple:
   </code>
 </pre>
 
+h2. Example (MDM notifications):
+
+You can send single MDM notifications or multiple notifications at once:
+
+<pre>
+  <code>
+    # Single Notification
+
+	device_token = 'ea560dda056b9bf6825e41f04bcb5e3d6f2f10136db8efa54ca1699916a41c08'
+	push_magic 	 = '12345678-90AB-CDEF-1234-567890ABCDEF'
+    APNS::NotificationSender.send_mdm_notification(device_token, push_magic)'
+
+	# Multiple Notifications
+	device_token_1 = 'a59c41d6a748d8abf5c8023b6632ac09996a9e20425fd411b626c7d07ce509b0'
+	push_magic_1   = '22345678-90AB-CDEF-1234-567890ABCDEF'
+    n1 = APNS::MdmNotification.new(device_token_1, push_magic_1)
+
+	device_token_2 = 'dec53d6ffb14525d12cf0a842f9f61f9f533f5b787705ac3551becbf722276f1'
+	push_magic_2   = '32345678-90AB-CDEF-1234-567890ABCDEF'
+    n1 = APNS::MdmNotification.new(device_token_2, push_magic_2)
+    
+    APNS::NotificationSender.send_notifications([n1, n2])
+  </code>
+</pre>
 
 h2. Send other info along with aps
 
