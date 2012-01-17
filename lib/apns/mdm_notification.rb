@@ -9,14 +9,6 @@ module APNS
 
     def packaged_notification id
       pm = self.packaged_message
-
-      # enhanced notification format
-      # ref:
-      #   Apple Documentation:
-      #     http://developer.apple.com/library/ios/#documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/CommunicatingWIthAPS/CommunicatingWIthAPS.html
-      #
-      #   Example Ruby implementation using event machine
-      #     http://blog.technopathllc.com/2010/12/apples-push-notification-with-ruby.html
       [1, id, 0, 32, self.device_token, pm.size, pm].pack("cNNnH*na*")
     end
 

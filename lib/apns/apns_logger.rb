@@ -4,6 +4,7 @@ module APNS
   # to go through it.
   class ApnsLogger
     require 'logger'
+    require "ap"
     
     APNS_LOGGER_INSTANCE = ApnsLogger.new
     APP_NAME = "apns_lib"
