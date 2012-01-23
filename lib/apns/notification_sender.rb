@@ -3,13 +3,21 @@ module APNS
     require 'json'
 
     def self.send_notification(device_token, message, connection_provider=APNS::ConnectionProvider, error_code_handler=APNS::ApnsErrorCodeHandler)
+        self.send_notification_object(APNS::Notification.new(device_token, message).packaged_notification(0))
+    end
+    
+    def self.send_mdm_notification(device_token, push_magic, connection_provider=APNS::ConnectionProvider, error_code_handler=APNS::ApnsErrorCodeHandler)
+      self.send_notification_object(APNS::MdmNotification.new(device_token, push_magic))
+    end
+    
+    def self.send_notification_object(notification_object, connection_provider=APNS::ConnectionProvider, error_code_handler=APNS::ApnsErrorCodeHandler)
       begin
         sock, ssl = connection_provider.open_connection
-        ssl.write(APNS::Notification.new(device_token, message).packaged_notification(0))
+        ssl.write(notification_object.packaged_notification(0))
         error = error_code_handler.get_error_if_present ssl
         APNS::ApnsLogger.log.info("error received from the APNS: #{error}") if error
       rescue Exception => ex
-        APNS::ApnsLogger.log.fatal "Exception in send_notification. device_token: #{device_token} message: #{message}"
+        APNS::ApnsLogger.log.fatal "Exception in send_notification_object. device_token: #{notification_object.device_token} payload: #{notification_object.packaged_message}"
         APNS::ApnsLogger.log.fatal(error = ex)
       ensure
         #do a couple of checks to see if both ssl and sock are null.
@@ -27,7 +35,7 @@ module APNS
       end
       error
     end
-
+    
     # Checks whether the APNS have sent any error messages through the connection. If any errors are present,
     # edit the state map, as necessary so that notification sending can be started from the point after the failed
     # notification. (the number of notifications is taken to consideration as well. so if the last notification that was
