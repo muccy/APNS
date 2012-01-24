@@ -8,7 +8,7 @@ module APNS
       context.cert = OpenSSL::X509::Certificate.new(File.read(APNS::Config.pem))
       context.key  = OpenSSL::PKey::RSA.new(File.read(APNS::Config.pem), APNS::Config.pass)
 
-      fhost        = APNS::Config.host.gsub('gateway', 'feedback')
+      fhost        = APNS::Config.use_sandbox_servers ? feedback.sandbox.push.apple.com : feedback.push.apple.com 
       # puts fhost
 
       sock = TCPSocket.new(fhost, 2196)

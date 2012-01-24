@@ -10,8 +10,8 @@ module APNS
       context      = OpenSSL::SSL::SSLContext.new
       context.cert = OpenSSL::X509::Certificate.new(File.read(APNS::Config.pem))
       context.key  = OpenSSL::PKey::RSA.new(File.read(APNS::Config.pem), APNS::Config.pass)
-
-      sock         = TCPSocket.new(APNS::Config.host, APNS::Config.port)
+      host         = APNS::Config.use_sandbox_servers ? 'gateway.sandbox.push.apple.com' : 'gateway.push.apple.com'
+      sock         = TCPSocket.new(host, 2195)
       ssl          = OpenSSL::SSL::SSLSocket.new(sock, context)
       ssl.connect
 
