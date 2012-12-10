@@ -6,7 +6,6 @@ module APNS
     require 'logger'
     require "ap"
     
-    APNS_LOGGER_INSTANCE = ApnsLogger.new
     APP_NAME = "apns_lib"
     
     def self.logger_instance
@@ -27,7 +26,7 @@ module APNS
 
     # get the logger instance
     def self.log
-      APNS_LOGGER_INSTANCE
+      self.logger_instance
     end
 
     # redirect all calls to methods, to the logger instance
